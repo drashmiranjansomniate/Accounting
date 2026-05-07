@@ -1,7 +1,12 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from uuid import UUID
+from enum import Enum
 
+class VendorStatus(str, Enum):
+    PAID = "PAID"
+    UNPAID = "UNPAID"
+    OVERDUE = "OVERDUE"
 
 class VendorCreate(BaseModel):
     vendor_name: str
@@ -12,6 +17,7 @@ class VendorCreate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     pincode: Optional[str] = None
+    status: VendorStatus = VendorStatus.UNPAID
 
 
 class VendorResponse(VendorCreate):

@@ -29,7 +29,8 @@ def create_vendor_repo(
         address=vendor.address,
         city=vendor.city,
         state=vendor.state,
-        pincode=vendor.pincode
+        pincode=vendor.pincode,
+        status=vendor.status,
     )
 
     db.add(new_vendor)
