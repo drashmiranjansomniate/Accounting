@@ -1,10 +1,17 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
-from app.modules.vendors.schema import VendorCreate
+from app.modules.vendors.schema import (
+    VendorCreate,
+    VendorUpdate
+)
 
 from app.modules.vendors.repository import (
     create_vendor_repo,
-    get_all_vendors_repo
+    get_all_vendors_repo,
+    get_vendor_by_code_repo,
+    update_vendor_repo,
+    delete_vendor_repo
 )
 
 
@@ -12,14 +19,6 @@ def create_vendor_service(
     db: Session,
     vendor: VendorCreate
 ):
-    # Future business logic goes here
-
-    # Example:
-    # validate duplicate GST
-    # validate duplicate email
-    # create audit logs
-    # send notifications
-
     return create_vendor_repo(
         db=db,
         vendor=vendor
@@ -27,6 +26,82 @@ def create_vendor_service(
 
 
 def get_all_vendors_service(
-    db: Session
+    db: Session,
+    page: int,
+    limit: int
 ):
-    return get_all_vendors_repo(db)
+    skip = (page - 1) * limit
+
+    return get_all_vendors_repo(
+        db=db,
+        skip=skip,
+        limit=limit
+    )
+
+
+def get_vendor_by_code_service(
+    db: Session,
+    vendor_code: str
+):
+    vendor = get_vendor_by_code_repo(
+        db=db,
+        vendor_code=vendor_code
+    )
+
+    if not vendor:
+        raise HTTPException(
+            status_code=404,
+            detail="Vendor not found"
+        )
+
+    return vendor
+
+
+def update_vendor_service(
+    db: Session,
+    vendor_code: str,
+    vendor_update: VendorUpdate
+):
+    vendor = get_vendor_by_code_repo(
+        db=db,
+        vendor_code=vendor_code
+    )
+
+    if not vendor:
+        raise HTTPException(
+            status_code=404,
+            detail="Vendor not found"
+        )
+
+    updated_vendor = update_vendor_repo(
+        db=db,
+        vendor_data=vendor,
+        vendor_update=vendor_update
+    )
+
+    return updated_vendor
+
+
+def delete_vendor_service(
+    db: Session,
+    vendor_code: str
+):
+    vendor = get_vendor_by_code_repo(
+        db=db,
+        vendor_code=vendor_code
+    )
+
+    if not vendor:
+        raise HTTPException(
+            status_code=404,
+            detail="Vendor not found"
+        )
+
+    delete_vendor_repo(
+        db=db,
+        vendor_data=vendor
+    )
+
+    return {
+        "message": "Vendor deleted successfully"
+    }

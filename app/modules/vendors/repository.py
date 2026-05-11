@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.modules.vendors.model import Vendor
-from app.modules.vendors.schema import VendorCreate
-
+from app.modules.vendors.schema import VendorCreate,VendorUpdate
 
 def create_vendor_repo(
     db: Session,
@@ -39,8 +38,51 @@ def create_vendor_repo(
 
     return new_vendor
 
+def update_vendor_repo(
+    db: Session,
+    vendor_data,
+    vendor_update: VendorUpdate
+):
+    update_data = vendor_update.dict(
+        exclude_unset=True
+    )
+
+    for key, value in update_data.items():
+        setattr(vendor_data, key, value)
+
+    db.commit()
+    db.refresh(vendor_data)
+
+    return vendor_data
+
 
 def get_all_vendors_repo(
-    db: Session
+    db: Session,
+    skip: int,
+    limit: int
 ):
-    return db.query(Vendor).all()
+    return (
+        db.query(Vendor)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+def get_vendor_by_code_repo(
+    db: Session,
+    vendor_code: str
+):
+    return (
+        db.query(Vendor)
+        .filter(Vendor.vendor_code == vendor_code)
+        .first()
+    )
+
+def delete_vendor_repo(
+    db: Session,
+    vendor_data
+):
+    db.delete(vendor_data)
+    db.commit()
+
+    return True
