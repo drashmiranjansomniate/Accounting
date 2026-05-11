@@ -1,4 +1,4 @@
-"""update vendor status
+`"""update vendor status
 
 Revision ID: 05a148f6b056
 Revises: d2323d26fdcb
