@@ -6,6 +6,14 @@ from app.core.database import engine
 from app.modules.vendors.model import Vendor
 from app.modules.vendors.routes import router as vendor_router
 
+from app.modules.purchase_orders.model import (
+    PurchaseOrder,
+    PurchaseOrderItem
+)
+
+from app.modules.purchase_orders.routes import (
+    router as purchase_order_router
+)
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,6 +23,7 @@ app = FastAPI(
 )
 
 app.include_router(vendor_router)
+app.include_router(purchase_order_router)
 
 
 @app.get("/")
