@@ -9,7 +9,8 @@ from app.modules.purchase_orders.model import (
 )
 
 from app.modules.purchase_orders.schema import (
-    PurchaseOrderCreate
+    PurchaseOrderCreate,
+    PurchaseOrderUpdate
 )
 
 from app.modules.vendors.model import Vendor
@@ -30,6 +31,32 @@ def get_all_purchase_orders_repo(
         .limit(limit)
         .all()
     )
+
+def get_purchase_order_by_code_repo(
+    db: Session,
+    po_code: str
+):
+    return (
+        db.query(PurchaseOrder)
+        .options(
+            joinedload(PurchaseOrder.items),
+            joinedload(PurchaseOrder.vendor)
+        )
+        .filter(
+            PurchaseOrder.po_code == po_code
+        )
+        .first()
+    )
+
+
+def delete_purchase_order_repo(
+    db: Session,
+    purchase_order
+):
+    db.delete(purchase_order)
+    db.commit()
+
+    return True
 
 
 def get_total_purchase_orders_count_repo(
@@ -127,3 +154,78 @@ def create_purchase_order_repo(
     db.refresh(new_po)
 
     return new_po
+
+def update_purchase_order_repo(
+    db: Session,
+    purchase_order,
+    purchase_order_update: PurchaseOrderUpdate
+):
+    vendor = (
+        db.query(Vendor)
+        .filter(
+            Vendor.vendor_code == purchase_order_update.vendor_code
+        )
+        .first()
+    )
+
+    subtotal = Decimal("0")
+    total_tax = Decimal("0")
+
+    for item in purchase_order_update.items:
+
+        item_total = (
+            item.quantity * item.unit_price
+        )
+
+        item_tax = (
+            item_total * item.tax_percent
+        ) / Decimal("100")
+
+        subtotal += item_total
+        total_tax += item_tax
+
+    grand_total = subtotal + total_tax
+
+    purchase_order.vendor_id = vendor.id
+    purchase_order.order_date = purchase_order_update.order_date
+    purchase_order.expected_delivery_date = (
+        purchase_order_update.expected_delivery_date
+    )
+
+    purchase_order.notes = purchase_order_update.notes
+
+    purchase_order.subtotal = subtotal
+    purchase_order.tax_amount = total_tax
+    purchase_order.total_amount = grand_total
+
+    db.query(PurchaseOrderItem).filter(
+        PurchaseOrderItem.purchase_order_id == purchase_order.id
+    ).delete()
+
+    for item in purchase_order_update.items:
+
+        item_total = (
+            item.quantity * item.unit_price
+        )
+
+        item_tax = (
+            item_total * item.tax_percent
+        ) / Decimal("100")
+
+        final_total = item_total + item_tax
+
+        new_item = PurchaseOrderItem(
+            purchase_order_id=purchase_order.id,
+            item_name=item.item_name,
+            quantity=item.quantity,
+            unit_price=item.unit_price,
+            tax_percent=item.tax_percent,
+            total=final_total
+        )
+
+        db.add(new_item)
+
+    db.commit()
+    db.refresh(purchase_order)
+
+    return purchase_order
