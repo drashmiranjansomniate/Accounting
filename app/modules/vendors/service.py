@@ -21,8 +21,8 @@ def create_vendor_service(
 ):
     return create_vendor_repo(
         db=db,
-        vendor=vendor
     )
+        vendor=vendor
 
 
 def get_all_vendors_service(
