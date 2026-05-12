@@ -10,7 +10,13 @@ from app.modules.purchase_orders.model import (
     PurchaseOrder,
     PurchaseOrderItem
 )
-
+from app.modules.bills.model import (
+    Bill,
+    BillItem
+)
+from app.modules.bills.routes import (
+    router as bill_router
+)
 from app.modules.purchase_orders.routes import (
     router as purchase_order_router
 )
@@ -24,7 +30,7 @@ app = FastAPI(
 
 app.include_router(vendor_router)
 app.include_router(purchase_order_router)
-
+app.include_router(bill_router)
 
 @app.get("/")
 def home():
