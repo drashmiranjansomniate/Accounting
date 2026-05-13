@@ -25,6 +25,14 @@ from app.core.security import (
     create_access_token
 )
 
+from app.modules.organization_members.model import (
+    OrganizationMember
+)
+
+from app.modules.organizations.model import (
+    Organization
+)
+
 
 async def send_otp_service(
     db: Session,
@@ -115,7 +123,7 @@ def register_service(
         phone=payload.phone,
         address=payload.address,
         created_by=user.id,
-        photo=photo,
+        photo=photo
     )
 
     create_organization_member_repo(
@@ -127,6 +135,7 @@ def register_service(
     return {
         "message": "Account created successfully"
     }
+
 
 def login_service(
     db: Session,
@@ -158,6 +167,32 @@ def login_service(
             detail="Invalid email or password"
         )
 
+    organization_member = db.query(
+        OrganizationMember
+    ).filter(
+        OrganizationMember.user_id == user.id
+    ).first()
+
+    if not organization_member:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Organization membership not found"
+        )
+
+    organization = db.query(
+        Organization
+    ).filter(
+        Organization.id == organization_member.organization_id
+    ).first()
+
+    if not organization:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found"
+        )
+
     access_token = create_access_token(
         data={
             "user_id": user.id,
@@ -166,6 +201,34 @@ def login_service(
     )
 
     return {
+
         "access_token": access_token,
-        "token_type": "bearer"
+
+        "token_type": "bearer",
+
+        "user": {
+
+            "id": user.id,
+
+            "email": user.email
+        },
+
+        "organization": {
+
+            "id": organization.id,
+
+            "organization_name": organization.organization_name,
+
+            "organization_type": organization.organization_type,
+
+            "gst_number": organization.gst_number,
+
+            "phone": organization.phone,
+
+            "address": organization.address,
+
+            "photo": organization.photo,
+
+            "created_at": organization.created_at
+        }
     }

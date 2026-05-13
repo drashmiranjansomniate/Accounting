@@ -31,6 +31,11 @@ from app.modules.auth.service import (
     register_service,
     login_service
 )
+from sqlalchemy.orm import joinedload
+
+from app.modules.organization_members.model import (
+    OrganizationMember
+)
 
 import shutil
 
@@ -194,4 +199,66 @@ def my_organization(
     return {
         "organization_id": organization.organization_id,
         "role": organization.role
+    }
+
+
+@router.get("/profile")
+def get_profile(
+
+    current_user: User = Depends(get_current_user),
+
+    db: Session = Depends(get_db)
+):
+
+    organization_member = db.query(
+        OrganizationMember
+    ).options(
+        joinedload(
+            OrganizationMember.organization
+        )
+    ).filter(
+        OrganizationMember.user_id == current_user.id
+    ).first()
+
+    if not organization_member:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Organization not found"
+        )
+
+    organization = organization_member.organization
+
+    return {
+
+        "user": {
+
+            "id": current_user.id,
+
+            "email": current_user.email
+        },
+
+        "organization": {
+
+            "id": organization.id,
+
+            "organization_name": organization.organization_name,
+
+            "organization_type": organization.organization_type,
+
+            "gst_number": organization.gst_number,
+
+            "phone": organization.phone,
+
+            "address": organization.address,
+
+            "photo": organization.photo,
+
+            "created_at": organization.created_at
+        },
+
+        "membership": {
+
+            "role": organization_member.role
+        }
     }

@@ -5,13 +5,20 @@ from sqlalchemy import (
     ForeignKey
 )
 
+from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 
 class OrganizationMember(Base):
+
     __tablename__ = "organization_members"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
     organization_id = Column(
         Integer,
@@ -26,4 +33,12 @@ class OrganizationMember(Base):
     role = Column(
         String,
         default="owner"
+    )
+
+    organization = relationship(
+        "Organization"
+    )
+
+    user = relationship(
+        "User"
     )
