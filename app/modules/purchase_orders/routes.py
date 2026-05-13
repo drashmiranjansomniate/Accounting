@@ -4,12 +4,15 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from fastapi import Query
 from app.modules.purchase_orders.schema import (
-    PurchaseOrderCreate
+    PurchaseOrderCreate,
+    PurchaseOrderUpdate,
 )
 
 from app.modules.purchase_orders.service import (
     create_purchase_order_service,
-    get_all_purchase_orders_service
+    get_all_purchase_orders_service,
+    delete_purchase_order_service,
+    update_purchase_order_service,
 )
 
 router = APIRouter(
@@ -44,4 +47,31 @@ def create_purchase_order(
     return {
         "message": "Purchase Order created successfully",
         "data": po
+    }
+
+@router.delete("/{po_code}")
+def delete_purchase_order(
+    po_code: str,
+    db: Session = Depends(get_db)
+):
+    return delete_purchase_order_service(
+        db=db,
+        po_code=po_code
+    )
+
+@router.patch("/{po_code}")
+def update_purchase_order(
+    po_code: str,
+    purchase_order_update: PurchaseOrderUpdate,
+    db: Session = Depends(get_db)
+):
+    updated_po = update_purchase_order_service(
+        db=db,
+        po_code=po_code,
+        purchase_order_update=purchase_order_update
+    )
+
+    return {
+        "message": "Purchase Order updated successfully",
+        "data": updated_po
     }

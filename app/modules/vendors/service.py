@@ -5,6 +5,7 @@ from app.modules.vendors.schema import (
     VendorCreate,
     VendorUpdate
 )
+from app.modules.vendors.model import Vendor
 
 from app.modules.vendors.repository import (
     create_vendor_repo,
@@ -19,10 +20,34 @@ def create_vendor_service(
     db: Session,
     vendor: VendorCreate
 ):
+    existing_email = (
+        db.query(Vendor)
+        .filter(Vendor.email == vendor.email)
+        .first()
+    )
+
+    if existing_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+
+    existing_gst = (
+        db.query(Vendor)
+        .filter(Vendor.gst_number == vendor.gst_number)
+        .first()
+    )
+
+    if existing_gst:
+        raise HTTPException(
+            status_code=400,
+            detail="GST number already exists"
+        )
+
     return create_vendor_repo(
         db=db,
-    )
         vendor=vendor
+    )
 
 
 def get_all_vendors_service(

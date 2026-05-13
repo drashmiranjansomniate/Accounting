@@ -60,3 +60,11 @@ class PurchaseOrderResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PurchaseOrderUpdate(BaseModel):
+    vendor_code: str
+    order_date: date
+    expected_delivery_date: Optional[date] = None
+    notes: Optional[str] = None
+
+    items: List[PurchaseOrderItemCreate]

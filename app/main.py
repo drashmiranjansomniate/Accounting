@@ -47,9 +47,22 @@ from app.modules.purchase_orders.model import (
     PurchaseOrder,
     PurchaseOrderItem
 )
-
+from app.modules.bills.model import (
+    Bill,
+    BillItem
+)
+from app.modules.cashbook.model import (
+    CashbookEntry
+)
+# Routers links
+from app.modules.bills.routes import (
+    router as bill_router
+)
 from app.modules.purchase_orders.routes import (
     router as purchase_order_router
+)
+from app.modules.cashbook.routes import (
+    router as cashbook_router
 )
 
 Base.metadata.create_all(bind=engine)
@@ -74,6 +87,8 @@ app.add_middleware(
 # Routers
 app.include_router(vendor_router)
 app.include_router(purchase_order_router)
+app.include_router(bill_router)
+app.include_router(cashbook_router)
 
 
 @app.get("/")
