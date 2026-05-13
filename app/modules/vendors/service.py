@@ -1,10 +1,12 @@
 from sqlalchemy.orm import Session
+
 from fastapi import HTTPException
 
 from app.modules.vendors.schema import (
     VendorCreate,
     VendorUpdate
 )
+
 from app.modules.vendors.model import Vendor
 
 from app.modules.vendors.repository import (
@@ -18,15 +20,20 @@ from app.modules.vendors.repository import (
 
 def create_vendor_service(
     db: Session,
-    vendor: VendorCreate
+    vendor: VendorCreate,
+    organization_id
 ):
+
     existing_email = (
         db.query(Vendor)
-        .filter(Vendor.email == vendor.email)
+        .filter(
+            Vendor.email == vendor.email
+        )
         .first()
     )
 
     if existing_email:
+
         raise HTTPException(
             status_code=400,
             detail="Email already exists"
@@ -46,19 +53,23 @@ def create_vendor_service(
 
     return create_vendor_repo(
         db=db,
-        vendor=vendor
+        vendor=vendor,
+        organization_id=organization_id
     )
 
 
 def get_all_vendors_service(
     db: Session,
+    organization_id,
     page: int,
     limit: int
 ):
+
     skip = (page - 1) * limit
 
     return get_all_vendors_repo(
         db=db,
+        organization_id=organization_id,
         skip=skip,
         limit=limit
     )
@@ -68,12 +79,14 @@ def get_vendor_by_code_service(
     db: Session,
     vendor_code: str
 ):
+
     vendor = get_vendor_by_code_repo(
         db=db,
         vendor_code=vendor_code
     )
 
     if not vendor:
+
         raise HTTPException(
             status_code=404,
             detail="Vendor not found"
@@ -87,12 +100,14 @@ def update_vendor_service(
     vendor_code: str,
     vendor_update: VendorUpdate
 ):
+
     vendor = get_vendor_by_code_repo(
         db=db,
         vendor_code=vendor_code
     )
 
     if not vendor:
+
         raise HTTPException(
             status_code=404,
             detail="Vendor not found"
@@ -111,12 +126,14 @@ def delete_vendor_service(
     db: Session,
     vendor_code: str
 ):
+
     vendor = get_vendor_by_code_repo(
         db=db,
         vendor_code=vendor_code
     )
 
     if not vendor:
+
         raise HTTPException(
             status_code=404,
             detail="Vendor not found"

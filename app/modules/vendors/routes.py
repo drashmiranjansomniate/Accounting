@@ -1,8 +1,17 @@
-from fastapi import APIRouter, Depends
+from fastapi import (
+    APIRouter,
+    Depends,
+    Query
+)
+
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from fastapi import Query
+
+from app.core.dependencies import (
+    get_current_organization
+)
+
 from app.modules.vendors.schema import (
     VendorCreate,
     VendorUpdate
@@ -16,6 +25,7 @@ from app.modules.vendors.service import (
     delete_vendor_service
 )
 
+
 router = APIRouter(
     prefix="/vendors",
     tags=["Vendors"]
@@ -24,12 +34,21 @@ router = APIRouter(
 
 @router.post("/")
 def create_vendor(
+
     vendor: VendorCreate,
-    db: Session = Depends(get_db)
+
+    db: Session = Depends(get_db),
+
+    organization = Depends(get_current_organization)
 ):
+
     vendor_data = create_vendor_service(
+
         db=db,
-        vendor=vendor
+
+        vendor=vendor,
+
+        organization_id=organization.organization_id
     )
 
     return {
@@ -40,13 +59,24 @@ def create_vendor(
 
 @router.get("/")
 def get_vendors(
+
     page: int = Query(1, ge=1),
+
     limit: int = Query(10, le=100),
-    db: Session = Depends(get_db)
+
+    db: Session = Depends(get_db),
+
+    organization = Depends(get_current_organization)
 ):
+
     vendors = get_all_vendors_service(
+
         db=db,
+
+        organization_id=organization.organization_id,
+
         page=page,
+
         limit=limit
     )
 
@@ -62,6 +92,7 @@ def get_single_vendor(
     vendor_code: str,
     db: Session = Depends(get_db)
 ):
+
     vendor = get_vendor_by_code_service(
         db=db,
         vendor_code=vendor_code
@@ -76,6 +107,7 @@ def update_vendor(
     vendor_update: VendorUpdate,
     db: Session = Depends(get_db)
 ):
+
     updated_vendor = update_vendor_service(
         db=db,
         vendor_code=vendor_code,
@@ -93,6 +125,7 @@ def delete_vendor(
     vendor_code: str,
     db: Session = Depends(get_db)
 ):
+
     return delete_vendor_service(
         db=db,
         vendor_code=vendor_code

@@ -1,0 +1,171 @@
+from fastapi import HTTPException
+
+from sqlalchemy.orm import Session
+
+from app.modules.auth.repository import (
+    get_user_by_email_repo,
+    create_user_repo,
+    create_organization_repo,
+    create_organization_member_repo
+)
+
+from app.modules.auth.utils import (
+    send_otp_email,
+    verify_otp,
+    is_email_verified
+)
+
+from app.modules.auth.schema import (
+    RegisterSchema
+)
+
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token
+)
+
+
+async def send_otp_service(
+    db: Session,
+    email: str
+):
+
+    existing_user = get_user_by_email_repo(
+        db,
+        email
+    )
+
+    if existing_user:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    await send_otp_email(email)
+
+    return {
+        "message": "OTP sent successfully"
+    }
+
+
+def verify_otp_service(
+    email: str,
+    otp: str
+):
+
+    is_valid = verify_otp(
+        email,
+        otp
+    )
+
+    if not is_valid:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired OTP"
+        )
+
+    return {
+        "message": "OTP verified successfully"
+    }
+
+
+def register_service(
+    db: Session,
+    payload: RegisterSchema,
+    photo=None
+):
+
+    if not is_email_verified(payload.email):
+
+        raise HTTPException(
+            status_code=400,
+            detail="Email not verified"
+        )
+
+    existing_user = get_user_by_email_repo(
+        db,
+        payload.email
+    )
+
+    if existing_user:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+
+    hashed_password = hash_password(
+        payload.password
+    )
+
+    user = create_user_repo(
+        db=db,
+        email=payload.email,
+        password=hashed_password
+    )
+
+    organization = create_organization_repo(
+        db=db,
+        organization_name=payload.organization_name,
+        organization_type=payload.organization_type,
+        gst_number=payload.gst_number,
+        phone=payload.phone,
+        address=payload.address,
+        created_by=user.id,
+        photo=photo,
+    )
+
+    create_organization_member_repo(
+        db=db,
+        organization_id=organization.id,
+        user_id=user.id
+    )
+
+    return {
+        "message": "Account created successfully"
+    }
+
+def login_service(
+    db: Session,
+    email: str,
+    password: str
+):
+
+    user = get_user_by_email_repo(
+        db,
+        email
+    )
+
+    if not user:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid email or password"
+        )
+
+    is_valid_password = verify_password(
+        password,
+        user.password
+    )
+
+    if not is_valid_password:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid email or password"
+        )
+
+    access_token = create_access_token(
+        data={
+            "user_id": user.id,
+            "email": user.email
+        }
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
