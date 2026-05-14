@@ -5,7 +5,9 @@ from sqlalchemy import (
     DateTime,
     Enum,
     Numeric,
-    Text
+    Text,
+    Integer,
+    ForeignKey
 )
 
 from sqlalchemy.dialects.postgresql import UUID
@@ -43,6 +45,12 @@ class CashbookEntry(Base):
     entry_code = Column(
         String,
         unique=True,
+        nullable=False
+    )
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
         nullable=False
     )
 

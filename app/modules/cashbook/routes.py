@@ -8,6 +8,10 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 
+from app.core.dependencies import (
+    get_current_user
+)
+
 from app.modules.cashbook.schema import (
     CashbookEntryCreate,
     CashbookEntryUpdate
@@ -30,11 +34,13 @@ router = APIRouter(
 @router.post("/")
 def create_cashbook_entry(
     entry: CashbookEntryCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     entry_data = create_cashbook_entry_service(
         db=db,
-        entry=entry
+        entry=entry,
+        user_id=current_user.id
     )
 
     return {
@@ -47,12 +53,14 @@ def create_cashbook_entry(
 def get_cashbook_entries(
     page: int = Query(1, ge=1),
     limit: int = Query(10, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     entries = get_all_cashbook_entries_service(
         db=db,
         page=page,
-        limit=limit
+        limit=limit,
+        user_id=current_user.id
     )
 
     return entries
@@ -61,11 +69,13 @@ def get_cashbook_entries(
 @router.get("/{entry_code}")
 def get_single_cashbook_entry(
     entry_code: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     entry = get_cashbook_entry_by_code_service(
         db=db,
-        entry_code=entry_code
+        entry_code=entry_code,
+        user_id=current_user.id
     )
 
     return entry
@@ -74,11 +84,13 @@ def get_single_cashbook_entry(
 @router.delete("/{entry_code}")
 def delete_cashbook_entry(
     entry_code: str,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     return delete_cashbook_entry_service(
         db=db,
-        entry_code=entry_code
+        entry_code=entry_code,
+        user_id=current_user.id
     )
 
 
@@ -86,12 +98,14 @@ def delete_cashbook_entry(
 def update_cashbook_entry(
     entry_code: str,
     entry_update: CashbookEntryUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user)
 ):
     updated_entry = update_cashbook_entry_service(
         db=db,
         entry_code=entry_code,
-        entry_update=entry_update
+        entry_update=entry_update,
+        user_id=current_user.id
     )
 
     return {
