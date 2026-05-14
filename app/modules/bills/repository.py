@@ -23,7 +23,8 @@ from app.modules.purchase_orders.model import (
 def get_all_bills_repo(
     db: Session,
     skip: int,
-    limit: int
+    limit: int,
+    organization_id: int
 ):
     return (
         db.query(Bill)
@@ -31,6 +32,9 @@ def get_all_bills_repo(
             joinedload(Bill.items),
             joinedload(Bill.vendor),
             joinedload(Bill.purchase_order)
+        )
+        .filter(
+            Bill.organization_id == organization_id
         )
         .offset(skip)
         .limit(limit)
@@ -39,14 +43,22 @@ def get_all_bills_repo(
 
 
 def get_total_bills_count_repo(
-    db: Session
+    db: Session,
+    organization_id: int
 ):
-    return db.query(Bill).count()
+    return (
+        db.query(Bill)
+        .filter(
+            Bill.organization_id == organization_id
+        )
+        .count()
+    )
 
 
 def get_bill_by_code_repo(
     db: Session,
-    bill_code: str
+    bill_code: str,
+    organization_id: int
 ):
     return (
         db.query(Bill)
@@ -56,7 +68,8 @@ def get_bill_by_code_repo(
             joinedload(Bill.purchase_order)
         )
         .filter(
-            Bill.bill_code == bill_code
+            Bill.bill_code == bill_code,
+            Bill.organization_id == organization_id
         )
         .first()
     )
@@ -64,12 +77,14 @@ def get_bill_by_code_repo(
 
 def create_bill_repo(
     db: Session,
-    bill: BillCreate
+    bill: BillCreate,
+    organization_id: int
 ):
     vendor = (
         db.query(Vendor)
         .filter(
-            Vendor.vendor_code == bill.vendor_code
+            Vendor.vendor_code == bill.vendor_code,
+            Vendor.organization_id == organization_id
         )
         .first()
     )
@@ -81,7 +96,8 @@ def create_bill_repo(
         purchase_order = (
             db.query(PurchaseOrder)
             .filter(
-                PurchaseOrder.po_code == bill.po_code
+                PurchaseOrder.po_code == bill.po_code,
+                PurchaseOrder.organization_id == organization_id
             )
             .first()
         )
@@ -131,6 +147,8 @@ def create_bill_repo(
             if purchase_order
             else None
         ),
+
+        organization_id=organization_id,
 
         invoice_number=bill.invoice_number,
 
@@ -195,7 +213,8 @@ def delete_bill_repo(
 def update_bill_repo(
     db: Session,
     bill,
-    bill_update: BillUpdate
+    bill_update: BillUpdate,
+    organization_id: int
 ):
     vendor = None
 
@@ -204,7 +223,8 @@ def update_bill_repo(
         vendor = (
             db.query(Vendor)
             .filter(
-                Vendor.vendor_code == bill_update.vendor_code
+                Vendor.vendor_code == bill_update.vendor_code,
+                Vendor.organization_id == organization_id
             )
             .first()
         )
@@ -216,7 +236,8 @@ def update_bill_repo(
         purchase_order = (
             db.query(PurchaseOrder)
             .filter(
-                PurchaseOrder.po_code == bill_update.po_code
+                PurchaseOrder.po_code == bill_update.po_code,
+                PurchaseOrder.organization_id == organization_id
             )
             .first()
         )

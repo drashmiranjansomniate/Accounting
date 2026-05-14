@@ -78,6 +78,12 @@ class PurchaseOrder(Base):
         default=0
     )
 
+    organization_id = Column(
+    Integer,
+    ForeignKey("organizations.id"),
+    nullable=False
+    )
+
     notes = Column(Text)
 
     created_at = Column(

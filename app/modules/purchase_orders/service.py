@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from fastapi import HTTPException
 
 from app.modules.purchase_orders.schema import (
@@ -20,12 +21,14 @@ from app.modules.vendors.model import Vendor
 
 def create_purchase_order_service(
     db: Session,
-    purchase_order: PurchaseOrderCreate
+    purchase_order: PurchaseOrderCreate,
+    organization_id: int
 ):
     vendor = (
         db.query(Vendor)
         .filter(
-            Vendor.vendor_code == purchase_order.vendor_code
+            Vendor.vendor_code == purchase_order.vendor_code,
+            Vendor.organization_id == organization_id
         )
         .first()
     )
@@ -38,23 +41,30 @@ def create_purchase_order_service(
 
     return create_purchase_order_repo(
         db=db,
-        purchase_order=purchase_order
+        purchase_order=purchase_order,
+        organization_id=organization_id
     )
+
 
 def get_all_purchase_orders_service(
     db: Session,
     page: int,
-    limit: int
+    limit: int,
+    organization_id: int
 ):
     skip = (page - 1) * limit
 
     purchase_orders = get_all_purchase_orders_repo(
         db=db,
         skip=skip,
-        limit=limit
+        limit=limit,
+        organization_id=organization_id
     )
 
-    total = get_total_purchase_orders_count_repo(db)
+    total = get_total_purchase_orders_count_repo(
+        db=db,
+        organization_id=organization_id
+    )
 
     total_pages = (total + limit - 1) // limit
 
@@ -68,13 +78,16 @@ def get_all_purchase_orders_service(
         "data": purchase_orders
     }
 
+
 def delete_purchase_order_service(
     db: Session,
-    po_code: str
+    po_code: str,
+    organization_id: int
 ):
     purchase_order = get_purchase_order_by_code_repo(
         db=db,
-        po_code=po_code
+        po_code=po_code,
+        organization_id=organization_id
     )
 
     if not purchase_order:
@@ -92,14 +105,17 @@ def delete_purchase_order_service(
         "message": "Purchase Order deleted successfully"
     }
 
+
 def update_purchase_order_service(
     db: Session,
     po_code: str,
-    purchase_order_update: PurchaseOrderUpdate
+    purchase_order_update: PurchaseOrderUpdate,
+    organization_id: int
 ):
     purchase_order = get_purchase_order_by_code_repo(
         db=db,
-        po_code=po_code
+        po_code=po_code,
+        organization_id=organization_id
     )
 
     if not purchase_order:
@@ -111,5 +127,6 @@ def update_purchase_order_service(
     return update_purchase_order_repo(
         db=db,
         purchase_order=purchase_order,
-        purchase_order_update=purchase_order_update
+        purchase_order_update=purchase_order_update,
+        organization_id=organization_id
     )
