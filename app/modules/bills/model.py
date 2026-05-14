@@ -91,6 +91,11 @@ class Bill(Base):
         Numeric(18, 2),
         default=0
     )
+    organization_id = Column(
+    Integer,
+    ForeignKey("organizations.id"),
+    nullable=False
+    )
 
     notes = Column(Text)
 

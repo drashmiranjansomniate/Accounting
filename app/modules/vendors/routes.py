@@ -25,7 +25,6 @@ from app.modules.vendors.service import (
     delete_vendor_service
 )
 
-
 router = APIRouter(
     prefix="/vendors",
     tags=["Vendors"]
@@ -34,21 +33,15 @@ router = APIRouter(
 
 @router.post("/")
 def create_vendor(
-
     vendor: VendorCreate,
-
     db: Session = Depends(get_db),
-
-    organization = Depends(get_current_organization)
+    organization_id: int = Depends(get_current_organization)
 ):
 
     vendor_data = create_vendor_service(
-
         db=db,
-
         vendor=vendor,
-
-        organization_id=organization.organization_id
+        organization_id=organization_id
     )
 
     return {
@@ -59,24 +52,16 @@ def create_vendor(
 
 @router.get("/")
 def get_vendors(
-
     page: int = Query(1, ge=1),
-
     limit: int = Query(10, le=100),
-
     db: Session = Depends(get_db),
-
-    organization = Depends(get_current_organization)
+    organization_id: int = Depends(get_current_organization)
 ):
 
     vendors = get_all_vendors_service(
-
         db=db,
-
-        organization_id=organization.organization_id,
-
+        organization_id=organization_id,
         page=page,
-
         limit=limit
     )
 

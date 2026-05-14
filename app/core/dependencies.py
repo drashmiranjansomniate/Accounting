@@ -82,4 +82,4 @@ def get_current_organization(
             detail="Organization not found"
         )
 
-    return organization_member
+    return organization_member.organization_id

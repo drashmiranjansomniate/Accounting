@@ -37,8 +37,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.database import Base
-from app.core.database import engine
 
 from app.modules.vendors.model import Vendor
 
@@ -66,13 +64,14 @@ from app.modules.purchase_orders.routes import (
 from app.modules.cashbook.routes import (
     router as cashbook_router
 )
+from app.modules.customers.routes import(router as customers_router)
+
 from app.modules.users.model import User
 from app.modules.organizations.model import Organization
 from app.modules.organization_members.model import OrganizationMember
 
 from fastapi.middleware.cors import CORSMiddleware
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Accounting SaaS API",
@@ -108,6 +107,7 @@ app.include_router(purchase_order_router)
 app.include_router(bill_router)
 app.include_router(cashbook_router)
 app.include_router(auth_router)
+app.include_router(customers_router)
 
 
 @app.get("/")

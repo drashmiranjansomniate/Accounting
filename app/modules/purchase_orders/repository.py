@@ -19,22 +19,8 @@ from app.modules.vendors.model import Vendor
 def get_all_purchase_orders_repo(
     db: Session,
     skip: int,
-    limit: int
-):
-    return (
-        db.query(PurchaseOrder)
-        .options(
-            joinedload(PurchaseOrder.items),
-            joinedload(PurchaseOrder.vendor)
-        )
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-def get_purchase_order_by_code_repo(
-    db: Session,
-    po_code: str
+    limit: int,
+    organization_id: int
 ):
     return (
         db.query(PurchaseOrder)
@@ -43,7 +29,28 @@ def get_purchase_order_by_code_repo(
             joinedload(PurchaseOrder.vendor)
         )
         .filter(
-            PurchaseOrder.po_code == po_code
+            PurchaseOrder.organization_id == organization_id
+        )
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+def get_purchase_order_by_code_repo(
+    db: Session,
+    po_code: str,
+    organization_id: int
+):
+    return (
+        db.query(PurchaseOrder)
+        .options(
+            joinedload(PurchaseOrder.items),
+            joinedload(PurchaseOrder.vendor)
+        )
+        .filter(
+            PurchaseOrder.po_code == po_code,
+            PurchaseOrder.organization_id == organization_id
         )
         .first()
     )
@@ -60,19 +67,28 @@ def delete_purchase_order_repo(
 
 
 def get_total_purchase_orders_count_repo(
-    db: Session
+    db: Session,
+    organization_id: int
 ):
-    return db.query(PurchaseOrder).count()
+    return (
+        db.query(PurchaseOrder)
+        .filter(
+            PurchaseOrder.organization_id == organization_id
+        )
+        .count()
+    )
 
 
 def create_purchase_order_repo(
     db: Session,
-    purchase_order: PurchaseOrderCreate
+    purchase_order: PurchaseOrderCreate,
+    organization_id: int
 ):
     vendor = (
         db.query(Vendor)
         .filter(
-            Vendor.vendor_code == purchase_order.vendor_code
+            Vendor.vendor_code == purchase_order.vendor_code,
+            Vendor.organization_id == organization_id
         )
         .first()
     )
@@ -115,6 +131,7 @@ def create_purchase_order_repo(
     new_po = PurchaseOrder(
         po_code=new_po_code,
         vendor_id=vendor.id,
+        organization_id=organization_id,
         order_date=purchase_order.order_date,
         expected_delivery_date=purchase_order.expected_delivery_date,
         subtotal=subtotal,
@@ -155,15 +172,18 @@ def create_purchase_order_repo(
 
     return new_po
 
+
 def update_purchase_order_repo(
     db: Session,
     purchase_order,
-    purchase_order_update: PurchaseOrderUpdate
+    purchase_order_update: PurchaseOrderUpdate,
+    organization_id: int
 ):
     vendor = (
         db.query(Vendor)
         .filter(
-            Vendor.vendor_code == purchase_order_update.vendor_code
+            Vendor.vendor_code == purchase_order_update.vendor_code,
+            Vendor.organization_id == organization_id
         )
         .first()
     )
@@ -188,6 +208,7 @@ def update_purchase_order_repo(
 
     purchase_order.vendor_id = vendor.id
     purchase_order.order_date = purchase_order_update.order_date
+
     purchase_order.expected_delivery_date = (
         purchase_order_update.expected_delivery_date
     )
