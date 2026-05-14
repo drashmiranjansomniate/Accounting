@@ -64,7 +64,12 @@ from app.modules.purchase_orders.routes import (
 from app.modules.cashbook.routes import (
     router as cashbook_router
 )
-from app.modules.customers.routes import(router as customers_router)
+from app.modules.customers.routes import(
+    router as customers_router
+)
+from app.modules.quotations.routes import(
+    router as quotations_router
+)
 
 from app.modules.users.model import User
 from app.modules.organizations.model import Organization
@@ -108,6 +113,7 @@ app.include_router(bill_router)
 app.include_router(cashbook_router)
 app.include_router(auth_router)
 app.include_router(customers_router)
+app.include_router(quotations_router)
 
 
 @app.get("/")

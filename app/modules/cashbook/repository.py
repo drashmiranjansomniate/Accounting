@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import joinedload
 
 from app.modules.cashbook.model import (
     CashbookEntry
@@ -13,7 +12,8 @@ from app.modules.cashbook.schema import (
 
 def create_cashbook_entry_repo(
     db: Session,
-    entry: CashbookEntryCreate
+    entry: CashbookEntryCreate,
+    user_id: int
 ):
     last_entry = (
         db.query(CashbookEntry)
@@ -34,6 +34,8 @@ def create_cashbook_entry_repo(
 
     new_entry = CashbookEntry(
         entry_code=new_entry_code,
+
+        user_id=user_id,
 
         entry_type=entry.entry_type,
 
@@ -62,10 +64,14 @@ def create_cashbook_entry_repo(
 def get_all_cashbook_entries_repo(
     db: Session,
     skip: int,
-    limit: int
+    limit: int,
+    user_id: int
 ):
     return (
         db.query(CashbookEntry)
+        .filter(
+            CashbookEntry.user_id == user_id
+        )
         .order_by(
             CashbookEntry.transaction_date.desc(),
             CashbookEntry.created_at.desc()
@@ -77,19 +83,28 @@ def get_all_cashbook_entries_repo(
 
 
 def get_total_cashbook_entries_count_repo(
-    db: Session
-):
-    return db.query(CashbookEntry).count()
-
-
-def get_cashbook_entry_by_code_repo(
     db: Session,
-    entry_code: str
+    user_id: int
 ):
     return (
         db.query(CashbookEntry)
         .filter(
-            CashbookEntry.entry_code == entry_code
+            CashbookEntry.user_id == user_id
+        )
+        .count()
+    )
+
+
+def get_cashbook_entry_by_code_repo(
+    db: Session,
+    entry_code: str,
+    user_id: int
+):
+    return (
+        db.query(CashbookEntry)
+        .filter(
+            CashbookEntry.entry_code == entry_code,
+            CashbookEntry.user_id == user_id
         )
         .first()
     )

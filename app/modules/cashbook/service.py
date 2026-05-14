@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from fastapi import HTTPException
 
 from app.modules.cashbook.schema import (
@@ -18,7 +19,8 @@ from app.modules.cashbook.repository import (
 
 def create_cashbook_entry_service(
     db: Session,
-    entry: CashbookEntryCreate
+    entry: CashbookEntryCreate,
+    user_id: int
 ):
     if entry.amount <= 0:
         raise HTTPException(
@@ -28,24 +30,30 @@ def create_cashbook_entry_service(
 
     return create_cashbook_entry_repo(
         db=db,
-        entry=entry
+        entry=entry,
+        user_id=user_id
     )
 
 
 def get_all_cashbook_entries_service(
     db: Session,
     page: int,
-    limit: int
+    limit: int,
+    user_id: int
 ):
     skip = (page - 1) * limit
 
     entries = get_all_cashbook_entries_repo(
         db=db,
         skip=skip,
-        limit=limit
+        limit=limit,
+        user_id=user_id
     )
 
-    total = get_total_cashbook_entries_count_repo(db)
+    total = get_total_cashbook_entries_count_repo(
+        db=db,
+        user_id=user_id
+    )
 
     total_pages = (total + limit - 1) // limit
 
@@ -62,11 +70,13 @@ def get_all_cashbook_entries_service(
 
 def get_cashbook_entry_by_code_service(
     db: Session,
-    entry_code: str
+    entry_code: str,
+    user_id: int
 ):
     entry = get_cashbook_entry_by_code_repo(
         db=db,
-        entry_code=entry_code
+        entry_code=entry_code,
+        user_id=user_id
     )
 
     if not entry:
@@ -80,11 +90,13 @@ def get_cashbook_entry_by_code_service(
 
 def delete_cashbook_entry_service(
     db: Session,
-    entry_code: str
+    entry_code: str,
+    user_id: int
 ):
     entry = get_cashbook_entry_by_code_repo(
         db=db,
-        entry_code=entry_code
+        entry_code=entry_code,
+        user_id=user_id
     )
 
     if not entry:
@@ -106,11 +118,13 @@ def delete_cashbook_entry_service(
 def update_cashbook_entry_service(
     db: Session,
     entry_code: str,
-    entry_update: CashbookEntryUpdate
+    entry_update: CashbookEntryUpdate,
+    user_id: int
 ):
     entry = get_cashbook_entry_by_code_repo(
         db=db,
-        entry_code=entry_code
+        entry_code=entry_code,
+        user_id=user_id
     )
 
     if not entry:
