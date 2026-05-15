@@ -1,22 +1,7 @@
 from fastapi import FastAPI
-
-
-from app.modules.vendors.model import Vendor
-
 from app.modules.vendors.routes import router as vendor_router
 from app.modules.auth.routes import router as auth_router
 
-from app.modules.purchase_orders.model import (
-    PurchaseOrder,
-    PurchaseOrderItem
-)
-from app.modules.bills.model import (
-    Bill,
-    BillItem
-)
-from app.modules.cashbook.model import (
-    CashbookEntry
-)
 # Routers links
 from app.modules.bills.routes import (
     router as bill_router
@@ -32,6 +17,12 @@ from app.modules.customers.routes import(
 )
 from app.modules.quotations.routes import(
     router as quotations_router
+)
+from app.modules.sales_orders.routes import(
+    router as sales_router
+)
+from app.modules.sales_invoices.routes import(
+    router as sales_invoice_router
 )
 
 from app.modules.users.model import User
@@ -64,6 +55,8 @@ app.include_router(cashbook_router)
 app.include_router(auth_router)
 app.include_router(customers_router)
 app.include_router(quotations_router)
+app.include_router(sales_router)
+app.include_router(sales_invoice_router)
 
 
 @app.get("/")

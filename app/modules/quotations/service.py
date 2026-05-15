@@ -4,6 +4,10 @@ from fastapi import HTTPException
 
 from app.modules.customers.model import Customer
 
+from app.modules.sales_orders.model import (
+    SalesOrder
+)
+
 from app.modules.quotations.schema import (
     QuotationCreate,
     QuotationUpdate
@@ -141,6 +145,23 @@ def delete_quotation_service(
         raise HTTPException(
             status_code=404,
             detail="Quotation not found"
+        )
+
+    existing_sales_order = (
+        db.query(SalesOrder)
+        .filter(
+            SalesOrder.quotation_id == quotation.id
+        )
+        .first()
+    )
+
+    if existing_sales_order:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Cannot delete quotation. "
+                "Sales Order already exists."
+            )
         )
 
     delete_quotation_repo(

@@ -4,8 +4,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from app.core.database import Base
-from app.modules.vendors.model import Vendor
+# from app.core.database import Base
+from app.db.base import Base
+# from app.modules.vendors.model import Vendor
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -21,32 +22,32 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
-from app.modules.users.model import User
-from app.modules.organizations.model import Organization
-from app.modules.organization_members.model import OrganizationMember
+# from app.modules.users.model import User
+# from app.modules.organizations.model import Organization
+# from app.modules.organization_members.model import OrganizationMember
 
-from app.modules.vendors.model import Vendor
+# from app.modules.vendors.model import Vendor
 
-from app.modules.customers.model import Customer
+# from app.modules.customers.model import Customer
 
-from app.modules.purchase_orders.model import (
-    PurchaseOrder,
-    PurchaseOrderItem
-)
+# from app.modules.purchase_orders.model import (
+#     PurchaseOrder,
+#     PurchaseOrderItem
+# )
 
-from app.modules.bills.model import (
-    Bill,
-    BillItem
-)
+# from app.modules.bills.model import (
+#     Bill,
+#     BillItem
+# )
 
-from app.modules.cashbook.model import (
-    CashbookEntry
-)
+# from app.modules.cashbook.model import (
+#     CashbookEntry
+# )
 
-from app.modules.quotations.model import (
-    Quotation,
-    QuotationItem
-)
+# from app.modules.quotations.model import (
+#     Quotation,
+#     QuotationItem
+# )
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
