@@ -97,6 +97,7 @@ app.include_router(unit_router)
 app.include_router(products_router)
 app.include_router(stock_transaction_router)
 app.include_router(warehouse_router)
+app.include_router(auth_router)
 
 
 @app.get("/")
