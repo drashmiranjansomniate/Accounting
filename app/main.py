@@ -9,17 +9,6 @@ from app.modules.vendors.model import Vendor
 from app.modules.vendors.routes import router as vendor_router
 from app.modules.auth.routes import router as auth_router
 
-from app.modules.purchase_orders.model import (
-    PurchaseOrder,
-    PurchaseOrderItem
-)
-from app.modules.bills.model import (
-    Bill,
-    BillItem
-)
-from app.modules.cashbook.model import (
-    CashbookEntry
-)
 # Routers links
 from app.modules.bills.routes import (
     router as bill_router
@@ -36,10 +25,27 @@ from app.modules.customers.routes import(
 from app.modules.quotations.routes import(
     router as quotations_router
 )
-
-from app.modules.users.model import User
-from app.modules.organizations.model import Organization
-from app.modules.organization_members.model import OrganizationMember
+from app.modules.sales_orders.routes import(
+    router as sales_router
+)
+from app.modules.sales_invoices.routes import(
+    router as sales_invoice_router
+)
+from app.modules.inventory.categories.routes import(
+    router as categories_router
+)
+from app.modules.inventory.units.routes import (
+    router as unit_router
+)
+from app.modules.inventory.products.routes import (
+    router as products_router
+)
+from app.modules.inventory.stock_transactions.routes import (
+    router as stock_transaction_router
+)
+from app.modules.inventory.warehouses.routes import(
+    router as warehouse_router
+)
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -82,9 +88,15 @@ app.include_router(vendor_router)
 app.include_router(purchase_order_router)
 app.include_router(bill_router)
 app.include_router(cashbook_router)
-app.include_router(auth_router)
 app.include_router(customers_router)
 app.include_router(quotations_router)
+app.include_router(sales_router)
+app.include_router(sales_invoice_router)
+app.include_router(categories_router)
+app.include_router(unit_router)
+app.include_router(products_router)
+app.include_router(stock_transaction_router)
+app.include_router(warehouse_router)
 
 
 @app.get("/")

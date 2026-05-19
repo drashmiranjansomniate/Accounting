@@ -4,8 +4,19 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
  
 from alembic import context
+# from app.core.database import Base
 from app.core.database import Base
-from app.modules.vendors.model import Vendor
+from app.modules.organizations.model import Organization
+from app.modules.users.model import User
+from app.modules.organization_members.model import OrganizationMember
+from app.modules.inventory.categories.model import Category
+from app.modules.inventory.units.model import Unit
+from app.modules.inventory.products.model import Product
+from app.modules.inventory.warehouses.model import Warehouse
+from app.modules.inventory.stock_transactions.model import (
+    StockTransaction
+)
+# from app.modules.vendors.model import Vendor
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -20,6 +31,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
+<<<<<<< HEAD
  
 from app.modules.users.model import User
 from app.modules.organizations.model import Organization
@@ -48,6 +60,36 @@ from app.modules.quotations.model import (
     QuotationItem
 )
  
+=======
+
+# from app.modules.users.model import User
+# from app.modules.organizations.model import Organization
+# from app.modules.organization_members.model import OrganizationMember
+
+# from app.modules.vendors.model import Vendor
+
+# from app.modules.customers.model import Customer
+
+# from app.modules.purchase_orders.model import (
+#     PurchaseOrder,
+#     PurchaseOrderItem
+# )
+
+# from app.modules.bills.model import (
+#     Bill,
+#     BillItem
+# )
+
+# from app.modules.cashbook.model import (
+#     CashbookEntry
+# )
+
+# from app.modules.quotations.model import (
+#     Quotation,
+#     QuotationItem
+# )
+
+>>>>>>> fb192054a8b1f8d0f3549d126a841bc93bd586c5
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
