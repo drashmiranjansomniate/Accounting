@@ -5,7 +5,17 @@ from sqlalchemy import pool
 
 from alembic import context
 # from app.core.database import Base
-from app.db.base import Base
+from app.core.database import Base
+from app.modules.organizations.model import Organization
+from app.modules.users.model import User
+from app.modules.organization_members.model import OrganizationMember
+from app.modules.inventory.categories.model import Category
+from app.modules.inventory.units.model import Unit
+from app.modules.inventory.products.model import Product
+from app.modules.inventory.warehouses.model import Warehouse
+from app.modules.inventory.stock_transactions.model import (
+    StockTransaction
+)
 # from app.modules.vendors.model import Vendor
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
