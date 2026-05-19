@@ -2,12 +2,22 @@ from sqlalchemy.orm import Session
 
 from fastapi import HTTPException
 
+from decimal import Decimal
+
 from app.modules.customers.model import (
     Customer
 )
 
 from app.modules.sales_orders.model import (
     SalesOrder
+)
+
+from app.modules.inventory.products.model import (
+    Product
+)
+
+from app.modules.inventory.stock_transactions.model import (
+    StockTransaction
 )
 
 from app.modules.sales_invoices.schema import (
@@ -31,6 +41,9 @@ def create_sales_invoice_service(
     organization_id: int,
     user_id: int
 ):
+
+    # CHECK CUSTOMER
+
     customer = (
         db.query(Customer)
         .filter(
@@ -41,10 +54,13 @@ def create_sales_invoice_service(
     )
 
     if not customer:
+
         raise HTTPException(
             status_code=404,
             detail="Customer not found"
         )
+
+    # CHECK SALES ORDER
 
     if invoice.sales_order_id:
 
@@ -58,17 +74,110 @@ def create_sales_invoice_service(
         )
 
         if not sales_order:
+
             raise HTTPException(
                 status_code=404,
                 detail="Sales Order not found"
             )
 
-    return create_sales_invoice_repo(
+    # PRODUCT VALIDATION
+
+    for item in invoice.items:
+
+        product = (
+            db.query(Product)
+            .filter(
+                Product.id == item.product_id,
+                Product.organization_id == organization_id
+            )
+            .first()
+        )
+
+        if not product:
+
+            raise HTTPException(
+                status_code=404,
+                detail=f"Product not found for {item.item_name}"
+            )
+
+        if Decimal(product.current_stock) < Decimal(item.quantity):
+
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient stock for {product.name}"
+            )
+
+    # CREATE SALES INVOICE
+
+    created_invoice = create_sales_invoice_repo(
         db=db,
         invoice=invoice,
         organization_id=organization_id,
         user_id=user_id
     )
+
+    # AUTOMATIC STOCK DEDUCTION
+
+    for item in invoice.items:
+
+        product = (
+            db.query(Product)
+            .filter(
+                Product.id == item.product_id,
+                Product.organization_id == organization_id
+            )
+            .first()
+        )
+
+        before_stock = Decimal(
+            product.current_stock
+        )
+
+        quantity = Decimal(
+            item.quantity
+        )
+
+        after_stock = (
+            before_stock - quantity
+        )
+
+        # UPDATE PRODUCT STOCK
+
+        product.current_stock = after_stock
+
+        # CREATE STOCK TRANSACTION
+
+        stock_transaction = StockTransaction(
+
+            organization_id=organization_id,
+
+            product_id=product.id,
+
+            transaction_type="SALE",
+
+            quantity=quantity,
+
+            before_stock=before_stock,
+
+            after_stock=after_stock,
+
+            reference_type="SALES_INVOICE",
+
+            reference_id=created_invoice.id,
+
+            remarks=(
+                f"Stock deducted from invoice "
+                f"{created_invoice.invoice_number}"
+            )
+        )
+
+        db.add(stock_transaction)
+
+    db.commit()
+
+    db.refresh(created_invoice)
+
+    return created_invoice
 
 
 def get_all_sales_invoices_service(
@@ -77,6 +186,7 @@ def get_all_sales_invoices_service(
     limit: int,
     organization_id: int
 ):
+
     skip = (page - 1) * limit
 
     invoices = get_all_sales_invoices_repo(
@@ -109,6 +219,7 @@ def get_single_sales_invoice_service(
     invoice_id: int,
     organization_id: int
 ):
+
     invoice = get_sales_invoice_by_id_repo(
         db=db,
         invoice_id=invoice_id,
@@ -116,6 +227,7 @@ def get_single_sales_invoice_service(
     )
 
     if not invoice:
+
         raise HTTPException(
             status_code=404,
             detail="Invoice not found"
@@ -130,6 +242,7 @@ def update_sales_invoice_service(
     invoice_update: SalesInvoiceUpdate,
     organization_id: int
 ):
+
     invoice = get_sales_invoice_by_id_repo(
         db=db,
         invoice_id=invoice_id,
@@ -137,6 +250,7 @@ def update_sales_invoice_service(
     )
 
     if not invoice:
+
         raise HTTPException(
             status_code=404,
             detail="Invoice not found"
@@ -154,6 +268,7 @@ def delete_sales_invoice_service(
     invoice_id: int,
     organization_id: int
 ):
+
     invoice = get_sales_invoice_by_id_repo(
         db=db,
         invoice_id=invoice_id,
@@ -161,6 +276,7 @@ def delete_sales_invoice_service(
     )
 
     if not invoice:
+
         raise HTTPException(
             status_code=404,
             detail="Invoice not found"
