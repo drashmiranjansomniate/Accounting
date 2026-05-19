@@ -1,37 +1,3 @@
-# from fastapi import FastAPI
-
-# from app.core.database import Base
-# from app.core.database import engine
-
-# from app.modules.vendors.model import Vendor
-# from app.modules.vendors.routes import router as vendor_router
-
-# from app.modules.purchase_orders.model import (
-#     PurchaseOrder,
-#     PurchaseOrderItem
-# )
-
-# from app.modules.purchase_orders.routes import (
-#     router as purchase_order_router
-# )
-
-# Base.metadata.create_all(bind=engine)
-
-# app = FastAPI(
-#     title="Accounting SaaS API",
-#     version="1.0.0"
-# )
-
-# app.include_router(vendor_router)
-# app.include_router(purchase_order_router)
-
-
-# @app.get("/")
-# def home():
-#     return {
-#         "message": "Accounting Backend Running Successfully"
-#     }
-
 
 
 from fastapi import FastAPI
@@ -77,6 +43,8 @@ from app.modules.organization_members.model import OrganizationMember
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI(
     title="Accounting SaaS API",
@@ -105,6 +73,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve uploads folder
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Routers
 app.include_router(vendor_router)
